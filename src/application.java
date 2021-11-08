@@ -1,14 +1,12 @@
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.stream.Stream;
 
 class application {
 
-    static Map<Integer, String> number2Word = new HashMap<Integer, String>() {{
+    static Map<Integer, String> number2Word = new HashMap<>() {{
         put(0, "");
         put(1, "one");
         put(2, "two");
@@ -59,13 +57,12 @@ class application {
     public static String Double2Words(BigDecimal inputBigDecimal) {
         String[] inputStringArray = String.valueOf(inputBigDecimal).split("[.]");
         inputStringArray[1] = inputStringArray[1].substring(0, 2);
-//        BigInteger[] inputIntegerArray = Stream.of(inputStringArray).mapToInt(BigInteger::).toArray();
         BigInteger[] inputIntegerArray = new BigInteger[2];
         inputIntegerArray[0] = new BigInteger(inputStringArray[0]);
         inputIntegerArray[1] = new BigInteger(inputStringArray[1]);
 
         String returnString = (inputIntegerArray[0].compareTo(BigInteger.valueOf(0)) < 0) ? "negative " : "";
-        if (inputIntegerArray[0].compareTo(BigInteger.valueOf(0))>0)
+        if (inputIntegerArray[0].compareTo(BigInteger.valueOf(0)) > 0)
             returnString += Thousands2Words(inputIntegerArray[0]) + "dollars";
         if (inputIntegerArray[1].compareTo(BigInteger.valueOf(0)) > 0)
             returnString += " and " + Tens2Words(inputIntegerArray[1].intValue()) + " cents";
@@ -83,20 +80,25 @@ class application {
         String returnString = "";
         if (inputInt >= 100)
             returnString += Tens2Words(inputInt % 1000 / 100) + " " + number2Word.get(100) + " ";
-        if (inputInt % 100 >= 20)
-            returnString += Tens2Words((inputInt % 100 / 10) * 10);
+        returnString += Tens2Words(inputInt % 100);
         return returnString;
     }
 
     public static String Thousands2Words(BigInteger inputInt) {
         StringBuilder returnString = new StringBuilder();
-        int magnitude10 = String.valueOf(inputInt).length()-1;
+        int magnitude10 = String.valueOf(inputInt).length() - 1;
         for (int i = (magnitude10 / 3) * 3; i >= 0; i -= 3) {
-            returnString.append(Hundreds2Words((inputInt.divide(BigInteger.valueOf((long) Math.pow(10, i))).intValue())));
-            if (number2Word.get((int) Math.pow(10, i)) == null)
+            returnString.append(Hundreds2Words(
+                    inputInt.divide(BigInteger.valueOf((long) Math.pow(10, i)))
+                            .remainder(BigInteger.valueOf((long) Math.pow(10, i + 3)))
+                            .intValue())).append(" ");
+            String thousandWord = number2Word.get((int) Math.pow(10, i));
+            if (i == 0)
+                continue;
+            else if (thousandWord == null)
                 returnString.append("10^").append(i);
             else
-                returnString.append(number2Word.get((int) Math.pow(10, i)));
+                returnString.append(thousandWord);
             returnString.append(" ");
         }
         return returnString.toString();
